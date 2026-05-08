@@ -1,0 +1,396 @@
+.hoangdz-ai-action-container {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #eff6ff;
+  font-family: Arial, sans-serif;
+}
+
+.hoangdz-ai-btn {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.hoangdz-ai-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.hoangdz-ai-result {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #111827;
+}
+
+.hoangdz-ai-result p {
+  margin: 5px 0;
+}
+
+.hoangdz-ai-answer {
+  color: #16a34a;
+}
+
+.hoangdz-ai-confidence {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.hoangdz-ai-error {
+  color: #dc2626;
+}
+
+#hoangdz-ai-chat-wrapper {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 2147483647;
+  font-family: Arial, sans-serif;
+}
+
+#hoangdz-ai-chat-toggle {
+  width: 54px;
+  height: 54px;
+  border: 0;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  display: block;
+  margin-left: auto;
+}
+
+#hoangdz-ai-chat-box {
+  position: relative;
+  width: 330px;
+  height: 430px;
+  margin-bottom: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 280px;
+  min-height: 300px;
+  max-width: 90vw;
+  max-height: 85vh;
+}
+
+.hoangdz-hidden { display: none !important; }
+
+/* ── Resize handles ── */
+.hoangdz-resize-handle {
+  position: absolute;
+  z-index: 10;
+  background: transparent;
+}
+.hoangdz-resize-n  { top: 0;    left: 8px;   right: 8px;  height: 6px; cursor: n-resize; }
+.hoangdz-resize-w  { left: 0;   top: 8px;    bottom: 8px; width: 6px;  cursor: w-resize; }
+.hoangdz-resize-nw { top: 0;    left: 0;     width: 12px; height: 12px; cursor: nw-resize; }
+.hoangdz-resize-nw::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 6px; height: 6px;
+  border-top: 2px solid #9ca3af;
+  border-left: 2px solid #9ca3af;
+}
+
+/* ── Header (draggable) ── */
+#hoangdz-ai-chat-header {
+  padding: 10px 12px;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 700;
+  cursor: move;
+  user-select: none;
+  flex-shrink: 0;
+  border-radius: 11px 11px 0 0;
+}
+
+/* ── Message area ── */
+#hoangdz-ai-chat-content {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  font-size: 14px;
+  color: #111827;
+}
+
+.hoangdz-ai-chat-msg {
+  margin-bottom: 9px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── Image preview strip ── */
+#hoangdz-ai-chat-img-preview {
+  display: none;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 10px;
+  border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.hoangdz-img-thumb {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.hoangdz-img-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+}
+
+.hoangdz-img-thumb-rm {
+  position: absolute;
+  top: -5px; right: -5px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Input row ── */
+#hoangdz-ai-chat-input-area {
+  border-top: 1px solid #e5e7eb;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+#hoangdz-ai-chat-attach-btn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 6px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+#hoangdz-ai-chat-attach-btn:hover { background: #f3f4f6; }
+
+#hoangdz-ai-chat-input {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 10px;
+  outline: none;
+  font-size: 13px;
+}
+
+#hoangdz-ai-chat-input:focus { border-color: #2563eb; }
+
+#hoangdz-ai-chat-send-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+#hoangdz-ai-chat-send-btn:hover { background: #1d4ed8; }
+
+/* ══════════════════════════════════════════════════
+   ASK-ALL BANNER
+   ══════════════════════════════════════════════════ */
+#hoangdz-ask-all-banner {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(37,99,235,0.35);
+  font-family: Arial, sans-serif;
+  flex-wrap: wrap;
+}
+
+#hoangdz-ask-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #fff;
+  color: #1e3a8a;
+  border: none;
+  border-radius: 7px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+
+#hoangdz-ask-all-btn:hover:not(:disabled) {
+  background: #dbeafe;
+  transform: translateY(-1px);
+}
+
+#hoangdz-ask-all-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+#hoangdz-ask-all-stop {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+#hoangdz-ask-all-stop:hover { background: #dc2626; }
+
+#hoangdz-ask-all-count {
+  color: rgba(255,255,255,0.75);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#hoangdz-ask-all-progress {
+  color: #bfdbfe;
+  font-size: 13px;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ══════════════════════════════════════════════════
+   CACHE BADGE
+   ══════════════════════════════════════════════════ */
+.hoangdz-cache-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-bottom: 5px;
+  letter-spacing: 0.3px;
+}
+
+/* ══════════════════════════════════════════════════
+   ANSWER VALUE HIGHLIGHT
+   ══════════════════════════════════════════════════ */
+.hoangdz-answer-value {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-weight: 700;
+}
+
+/* ══════════════════════════════════════════════════
+   RICH OUTPUT — MARKDOWN + LaTeX
+   ══════════════════════════════════════════════════ */
+.hoangdz-ai-explanation {
+  margin: 5px 0;
+  line-height: 1.6;
+}
+
+.hoangdz-latex-block {
+  display: block;
+  font-family: 'Courier New', monospace;
+  background: #f0f4ff;
+  border-left: 3px solid #2563eb;
+  padding: 6px 10px;
+  margin: 6px 0;
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+  color: #1e3a8a;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* KaTeX display-mode block (khi KaTeX load thành công) */
+.hoangdz-katex-block {
+  display: block;
+  background: #f0f4ff;
+  border-left: 3px solid #2563eb;
+  padding: 10px 14px;
+  margin: 8px 0;
+  border-radius: 0 8px 8px 0;
+  overflow-x: auto;
+  text-align: center;
+}
+
+.hoangdz-latex-inline {
+  font-family: 'Courier New', monospace;
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12.5px;
+  font-style: normal;
+  border: 1px solid #bfdbfe;
+}
+
+.hoangdz-code {
+  font-family: 'Courier New', monospace;
+  background: #f3f4f6;
+  color: #374151;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+
+/* ══════════════════════════════════════════════════
+   CHAT HEADER — flex để chứa nút close/clear
+   ══════════════════════════════════════════════════ */
+#hoangdz-ai-chat-header {
+  display: flex;
+  align-items: center;
+}
+

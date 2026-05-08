@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>LMS AI Assistant</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      width: 360px;
+      padding: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #111827;
+      background: #f9fafb;
+      margin: 0;
+      transition: background 0.3s;
+    }
+    body.disabled-mode { background: #f3f4f6; opacity: 0.85; }
+
+    /* ── App Header ── */
+    .app-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 16px 12px;
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      color: #fff;
+    }
+    .app-header h3 {
+      margin: 0;
+      font-size: 15px;
+      color: #fff;
+      flex: 1;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Power Toggle ── */
+    .power-wrap { display: flex; align-items: center; gap: 6px; }
+    .power-label {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      transition: color 0.2s; color: rgba(255,255,255,0.6);
+    }
+    .power-label.on  { color: #86efac; }
+    .power-label.off { color: #fca5a5; }
+    .switch { position: relative; display: inline-block; width: 42px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; inset: 0; background: rgba(255,255,255,0.25);
+      border-radius: 24px; cursor: pointer; transition: background 0.25s;
+    }
+    .slider::before {
+      content: ''; position: absolute;
+      height: 18px; width: 18px; left: 3px; bottom: 3px;
+      background: white; border-radius: 50%;
+      transition: transform 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,.25);
+    }
+    input:checked + .slider { background: #16a34a; }
+    input:checked + .slider::before { transform: translateX(18px); }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #e5e7eb;
+      background: #fff;
+    }
+    .tab-btn {
+      flex: 1; padding: 9px 4px; background: none; border: none;
+      font-size: 12px; font-weight: 600; color: #6b7280;
+      cursor: pointer; transition: all 0.2s;
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+    }
+    .tab-btn:hover { color: #2563eb; background: #eff6ff; }
+    .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+
+    /* ── Tab panels ── */
+    .tab-panel { display: none; padding: 14px 16px; }
+    .tab-panel.active { display: block; }
+
+    /* ── Fields ── */
+    .field { margin-bottom: 12px; }
+    label {
+      display: block; font-size: 11px; font-weight: 700;
+      margin-bottom: 5px; color: #374151;
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    select, input[type="text"], input[type="password"] {
+      width: 100%; padding: 8px 10px;
+      border: 1px solid #d1d5db; border-radius: 6px;
+      background: #fff; font-size: 13px; color: #111827;
+    }
+    select:focus, input:focus {
+      outline: none; border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
+    }
+    .hint { font-size: 11px; color: #6b7280; margin-top: 4px; line-height: 1.4; }
+    .hint code {
+      background: #e5e7eb; padding: 1px 4px;
+      border-radius: 3px; font-size: 11px;
+    }
+    #customModelRow { display: none; margin-top: 6px; }
+
+    /* ── Settings dimmed ── */
+    #settingsArea { transition: opacity 0.25s; }
+    #settingsArea.dimmed { opacity: 0.45; pointer-events: none; }
+
+    /* ── Site Toggle ── */
+    .toggle-group {
+      display: flex; border: 1px solid #d1d5db;
+      border-radius: 8px; overflow: hidden; background: #fff;
+    }
+    .toggle-group input[type="radio"] { display: none; }
+    .toggle-group label {
+      flex: 1; text-align: center; padding: 8px 4px;
+      font-size: 12px; font-weight: 600; color: #6b7280;
+      cursor: pointer; margin: 0; text-transform: none; letter-spacing: 0;
+      border-right: 1px solid #d1d5db; transition: all 0.2s; line-height: 1.4;
+    }
+    .toggle-group label:last-child { border-right: none; }
+    .toggle-group input[type="radio"]:checked + label { background: #2563eb; color: #fff; }
+
+    /* ── Option Row (checkbox toggle) ── */
+    .option-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; background: #fff;
+      border: 1px solid #e5e7eb; border-radius: 8px;
+      margin-bottom: 10px; cursor: pointer;
+    }
+    .option-row:hover { background: #f0f9ff; border-color: #bfdbfe; }
+    .option-row input[type="checkbox"] {
+      width: 16px; height: 16px; cursor: pointer; accent-color: #2563eb;
+      flex-shrink: 0;
+    }
+    .option-row .opt-label { font-size: 13px; color: #111827; font-weight: 600; }
+    .option-row .opt-hint { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+    /* ── Divider ── */
+    .divider { border: none; border-top: 1px solid #e5e7eb; margin: 12px 0; }
+
+    /* ── Button ── */
+    button#saveBtn {
+      width: 100%; padding: 10px;
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      color: white; border: 0; border-radius: 6px;
+      cursor: pointer; font-weight: 700; font-size: 13px;
+      margin-top: 4px; transition: opacity 0.2s;
+    }
+    button#saveBtn:hover { opacity: 0.9; }
+    #status { margin-top: 10px; font-size: 12px; min-height: 16px; }
+
+    /* ── Stats Tab ── */
+    .stat-card {
+      background: #fff; border: 1px solid #e5e7eb;
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 10px;
+    }
+    .stat-card h4 {
+      margin: 0 0 10px; font-size: 12px; color: #6b7280;
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-item { text-align: center; }
+    .stat-num { font-size: 24px; font-weight: 700; color: #1e3a8a; }
+    .stat-lbl { font-size: 11px; color: #6b7280; margin-top: 2px; }
+    .stat-bar-wrap { margin-top: 8px; }
+    .stat-bar-label { display: flex; justify-content: space-between; font-size: 11px; color: #374151; margin-bottom: 3px; }
+    .stat-bar { height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+    .stat-bar-fill { height: 100%; background: linear-gradient(90deg,#2563eb,#60a5fa); border-radius: 3px; transition: width 0.4s; }
+
+    #clearCacheBtn {
+      width: 100%; padding: 8px; background: #fff;
+      border: 1px solid #e5e7eb; border-radius: 6px;
+      font-size: 12px; color: #374151; cursor: pointer;
+      font-weight: 600; margin-top: 4px; transition: background 0.2s;
+    }
+    #clearCacheBtn:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+    .cache-badge {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      background: #dbeafe; color: #1d4ed8; padding: 1px 6px;
+      border-radius: 10px; margin-left: 6px; vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="app-header">
+    <h3>⚙️ LMS AI Assistant</h3>
+    <div class="power-wrap">
+      <span class="power-label" id="powerLabel">ON</span>
+      <label class="switch" title="Bật/tắt extension">
+        <input type="checkbox" id="enabledToggle" checked />
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" id="tabSettings" data-tab="panelSettings">⚙️ Cài đặt</button>
+    <button class="tab-btn" id="tabOptions"   data-tab="panelOptions">🛠️ Tùy chọn</button>
+    <button class="tab-btn" id="tabStats"     data-tab="panelStats">📊 Thống kê</button>
+  </div>
+
+  <!-- ── Panel: Settings ── -->
+  <div class="tab-panel active" id="panelSettings">
+    <div id="settingsArea">
+      <!-- Site Mode -->
+      <div class="field">
+        <label>Chế độ trang web</label>
+        <div class="toggle-group">
+          <input type="radio" name="siteMode" id="modeLms" value="lms" />
+          <label for="modeLms">🎓 LMS cũ<br/><small style="font-weight:400;font-size:10px;">e-learning.hust...</small></label>
+
+          <input type="radio" name="siteMode" id="modePortal" value="portal" />
+          <label for="modePortal">🏫 Canvas Portal<br/><small style="font-weight:400;font-size:10px;">portal.uet.vnu...</small></label>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- Provider -->
+      <div class="field">
+        <label for="providerSelect">Nhà cung cấp AI</label>
+        <select id="providerSelect"></select>
+      </div>
+
+      <!-- Model -->
+      <div class="field">
+        <label for="modelSelect">Model</label>
+        <select id="modelSelect"></select>
+        <div id="customModelRow">
+          <input id="customModelInput" type="text" placeholder="Ví dụ: gemini/gemini-1.5-pro" />
+          <div class="hint">Định dạng: <code>prefix/tên-model</code></div>
+        </div>
+      </div>
+
+      <!-- API Key -->
+      <div class="field">
+        <label for="apiKey">Bearer Token (9Router)</label>
+        <input id="apiKey" type="password" placeholder="Nhập token từ 9Router Dashboard..." />
+        <div class="hint">Lấy token tại: <code>localhost:20128/dashboard</code></div>
+      </div>
+
+      <button id="saveBtn">💾 Lưu cài đặt</button>
+      <div id="status"></div>
+    </div>
+  </div>
+
+  <!-- ── Panel: Options ── -->
+  <div class="tab-panel" id="panelOptions">
+    <div id="optionsArea">
+      <!-- Rich Format Toggle -->
+      <label class="option-row" for="richFormatToggle">
+        <input type="checkbox" id="richFormatToggle" />
+        <div>
+          <div class="opt-label">🔢 Định dạng đẹp (Rich Output)</div>
+          <div class="opt-hint">Render Markdown + LaTeX trong giải thích. Tốn thêm ~20% token.</div>
+        </div>
+      </label>
+
+      <!-- Keyboard shortcuts info -->
+      <div class="stat-card" style="margin-top:4px;">
+        <h4>⌨️ Phím tắt</h4>
+        <div style="font-size:12px;color:#374151;line-height:1.8;">
+          <div><code style="background:#e5e7eb;padding:1px 5px;border-radius:3px;font-size:11px;">Alt + A</code> — Hỏi tất cả câu hỏi</div>
+          <div style="margin-top:4px;"><code style="background:#e5e7eb;padding:1px 5px;border-radius:3px;font-size:11px;">Alt + C</code> — Mở / đóng Chat</div>
+        </div>
+        <div class="hint" style="margin-top:8px;">Có thể thay đổi tại <code>chrome://extensions/shortcuts</code></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Panel: Stats ── -->
+  <div class="tab-panel" id="panelStats">
+    <div class="stat-card">
+      <h4>Tổng quan</h4>
+      <div class="stat-grid">
+        <div class="stat-item">
+          <div class="stat-num" id="statTotal">0</div>
+          <div class="stat-lbl">Câu đã hỏi</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" id="statCacheHit">0%</div>
+          <div class="stat-lbl">Cache hit</div>
+        </div>
+        <div class="stat-item" style="margin-top:8px;">
+          <div class="stat-num" id="statConfidence">—</div>
+          <div class="stat-lbl">Confidence TB</div>
+        </div>
+        <div class="stat-item" style="margin-top:8px;">
+          <div class="stat-num" id="statFillIn">0</div>
+          <div class="stat-lbl">Câu điền số</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card" id="modelStatCard">
+      <h4>Model hay dùng nhất</h4>
+      <div id="statModels" style="font-size:12px;color:#6b7280;">Chưa có dữ liệu.</div>
+    </div>
+
+    <button id="clearCacheBtn">🗑️ Xóa cache câu hỏi</button>
+    <div id="cacheStatus" style="font-size:11px;color:#6b7280;margin-top:6px;text-align:center;"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "LMS AI Assistant",
+  "version": "1.2.0",
+  "description": "AI assistant for LMS quizzes and floating chat.",
+  "permissions": ["storage", "tabs", "commands"],
+  "host_permissions": [
+    "http://localhost:20128/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.openai.com/*"
+  ],
+  "commands": {
+    "ask-all": {
+      "suggested_key": { "default": "Alt+A" },
+      "description": "Hỏi tất cả câu hỏi"
+    },
+    "toggle-chat": {
+      "suggested_key": { "default": "Alt+C" },
+      "description": "Mở/đóng floating chat"
+    }
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content.js"],
+      "css": ["style.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
