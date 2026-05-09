@@ -90,14 +90,14 @@ async function fetchImageAsBase64(url) {
       console.error('[HoangDZ-BG] HTTP lỗi khi fetch ảnh:', resp.status, url);
       return { base64: null, error: `HTTP ${resp.status}` };
     }
-    const buffer   = await resp.arrayBuffer();
-    const bytes    = new Uint8Array(buffer);
+    const buffer = await resp.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
     let binary = '';
     const chunkSize = 8192;
     for (let i = 0; i < bytes.length; i += chunkSize) {
       binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
     }
-    const base64   = btoa(binary);
+    const base64 = btoa(binary);
     const mimeType = resp.headers.get('content-type') || 'image/png';
     console.log('[HoangDZ-BG] Ảnh OK:', mimeType, bytes.length, 'bytes');
     return { base64: `data:${mimeType};base64,${base64}` };
@@ -115,16 +115,16 @@ async function handleAIRequest(req) {
     'providerId', 'modelName', 'apiKey', 'chatHistory', 'richFormat'
   ]);
 
-  const apiKey    = settings.apiKey;
+  const apiKey = settings.apiKey;
   const modelName = settings.modelName || 'gemini/gemini-1.5-flash';
   const richFormat = settings.richFormat === true;
 
   if (!apiKey) return { success: false, error: 'Chưa cấu hình API Key.' };
 
   if (req.type === 'ASK_AI') {
-    const mode    = req.mode || 'portal';
+    const mode = req.mode || 'portal';
     const payload = req.payload || {};
-    const images  = Array.isArray(payload.images) ? payload.images : [];
+    const images = Array.isArray(payload.images) ? payload.images : [];
 
     // ── Kiểm tra cache (chỉ cache khi không có ảnh) ──
     if (images.length === 0) {
@@ -136,9 +136,9 @@ async function handleAIRequest(req) {
       }
     }
 
-    const prompt  = buildQuizPrompt(payload, mode, richFormat);
+    const prompt = buildQuizPrompt(payload, mode, richFormat);
     const rawText = await callAIWithRetry({ apiKey, modelName, prompt, images });
-    const data    = parseAIResponse(rawText, payload);
+    const data = parseAIResponse(rawText, payload);
 
     // ── Lưu cache ──
     if (images.length === 0) await setCachedResult(payload, data, richFormat);
@@ -151,9 +151,9 @@ async function handleAIRequest(req) {
 
   // CHAT_CONVERSATION
   const history = Array.isArray(settings.chatHistory) ? settings.chatHistory.slice(-10) : [];
-  const prompt  = buildChatPrompt(history, req.text || '', richFormat);
+  const prompt = buildChatPrompt(history, req.text || '', richFormat);
   const chatImages = Array.isArray(req.images) ? req.images : [];
-  const reply   = await callAIWithRetry({ apiKey, modelName, prompt, images: chatImages });
+  const reply = await callAIWithRetry({ apiKey, modelName, prompt, images: chatImages });
 
   history.push({ role: 'user', text: req.text || '' });
   history.push({ role: 'assistant', text: reply });
@@ -175,17 +175,17 @@ const RICH_FORMAT_INSTRUCTION = `
 
 function buildQuizPrompt(payload = {}, mode = 'portal', richFormat = false) {
   const {
-    title        = '',
-    options      = [],
+    title = '',
+    options = [],
     questionType = 'multiple_choice',
-    canvasType   = '',
-    hasImages    = false,
-    imageAlts    = [],
-    images       = [],
+    canvasType = '',
+    hasImages = false,
+    imageAlts = [],
+    images = [],
   } = payload;
 
-  const isFillin   = questionType === 'fill_in';
-  const hasVision  = images.length > 0;
+  const isFillin = questionType === 'fill_in';
+  const hasVision = images.length > 0;
 
   const imageNote = hasImages && !hasVision
     ? `\n[Lưu ý: Câu hỏi có hình ảnh (${imageAlts.join(', ')}) nhưng không thể tải được. Phân tích dựa trên text có sẵn.]`
@@ -329,14 +329,14 @@ async function callAI({ apiKey, modelName, prompt, images = [] }) {
   const response = await fetch(`${NINE_ROUTER_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
-      'Content-Type':  'application/json',
+      'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
       model: modelName,
       messages: [
         { role: 'system', content: 'Bạn là trợ lý AI giải toán/trắc nghiệm, trả lời bằng tiếng Việt.' },
-        { role: 'user',   content: userContent }
+        { role: 'user', content: userContent }
       ],
       temperature: 0.2
     })
@@ -385,9 +385,9 @@ function parseAIResponse(rawText, payload = {}) {
   if (isFillin) {
     return {
       questionType: 'fill_in',
-      answer:       String(parsed.answer ?? parsed.correct_text ?? parsed.result ?? ''),
-      explanation:  String(parsed.explanation || parsed.reason || 'Không có giải thích.'),
-      confidence:   typeof parsed.confidence === 'number' ? parsed.confidence : null,
+      answer: String(parsed.answer ?? parsed.correct_text ?? parsed.result ?? ''),
+      explanation: String(parsed.explanation || parsed.reason || 'Không có giải thích.'),
+      confidence: typeof parsed.confidence === 'number' ? parsed.confidence : null,
     };
   }
 
@@ -432,8 +432,8 @@ function parseAIResponse(rawText, payload = {}) {
   return {
     questionType: 'multiple_choice',
     correct_index: correctIndex,
-    correct_text:  correctText,
-    explanation:   String(parsed.explanation || parsed.reason || 'Không có giải thích.'),
-    confidence:    typeof parsed.confidence === 'number' ? parsed.confidence : null,
+    correct_text: correctText,
+    explanation: String(parsed.explanation || parsed.reason || 'Không có giải thích.'),
+    confidence: typeof parsed.confidence === 'number' ? parsed.confidence : null,
   };
 }
