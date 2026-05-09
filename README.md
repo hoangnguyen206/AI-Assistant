@@ -30,23 +30,33 @@ Trông rất là mệt mỏi đúng không? Với **LMS AI Assistant**, bạn ch
 
 ## 📸 Hình ảnh minh họa (Showcase)
 
-*(⚠️ Ghi chú: Hãy thay link hình ảnh của bạn vào các mục bên dưới để hoàn thiện README nhé!)*
-
 **1. Format Text Thuần vs Định dạng Toán học Đẹp**
 > *Với tính năng Rich Output, các công thức được render chuẩn chỉnh thay vì text thuần thô ráp.*
-![Minh họa Format](link_anh_minh_hoa_format_dep_va_xau_cua_ban_o_day)
+
+<img width="1641" height="1819" alt="image" src="https://github.com/user-attachments/assets/3654da65-19f1-4ed8-92ae-e18eaddb8d3b" />
+<br/>
+<img width="1608" height="376" alt="image" src="https://github.com/user-attachments/assets/c04539d4-4db1-433f-87dd-f3a813f107ca" />
 
 **2. Tính năng "Hỏi tất cả" (Ask-All)**
 > *Nút bấm thần thánh: Bấm 1 nhát giải quyết cả đề thi.*
-![Hỏi tất cả các câu hỏi](link_anh_minh_hoa_nut_ask_all_cua_ban_o_day)
+
+<img width="2071" height="175" alt="image" src="https://github.com/user-attachments/assets/ed77623d-8f25-40d9-bd9e-e6bf819bc673" />
+<br/>
+<img width="2075" height="162" alt="image" src="https://github.com/user-attachments/assets/0bc9d915-50c5-46a9-974c-64e8ad183f41" />
 
 **3. Khung Chat AI Nổi (Floating Chat)**
 > *Trò chuyện trực tiếp và đính kèm hình ảnh ngay trong tab làm bài.*
-![Khung chat nổi](link_anh_minh_hoa_floating_chat_cua_ban_o_day)
+
+<img width="850" height="1112" alt="image" src="https://github.com/user-attachments/assets/c665093b-f0ba-4573-848b-15d776befa2c" />
 
 **4. Thống kê & Quản lý API**
 > *Bảng điều khiển trực quan trên Popup.*
-![Bảng thống kê](link_anh_minh_hoa_bang_thong_ke_cua_ban_o_day)
+
+<img width="895" height="1262" alt="image" src="https://github.com/user-attachments/assets/da3b45fd-daac-4e65-b14f-038ddec9dc3c" />
+<br/>
+<img width="907" height="837" alt="image" src="https://github.com/user-attachments/assets/a4c2297a-c02e-4245-b5ee-22e43222bc41" />
+<br/>
+<img width="908" height="1070" alt="image" src="https://github.com/user-attachments/assets/15e7dd29-0e08-4d17-bad8-d68b295903f6" />
 
 ---
 
