@@ -26,16 +26,18 @@
   let currentMode = 'portal';
   let extensionEnabled = true;
   let richFormat = false;
+  let autoFillEnabled = true;
   let observerStarted = false;
   let currentSelectors = SELECTORS.portal;
 
   // ═══════════════════════════════════════════════════
   // INIT
   // ═══════════════════════════════════════════════════
-  chrome.storage.local.get(['siteMode', 'extensionEnabled', 'richFormat'], (result) => {
+  chrome.storage.local.get(['siteMode', 'extensionEnabled', 'richFormat', 'autoFillEnabled'], (result) => {
     currentMode = result.siteMode || 'portal';
     extensionEnabled = result.extensionEnabled !== false;
     richFormat = result.richFormat === true;
+    autoFillEnabled = result.autoFillEnabled !== false;
     currentSelectors = SELECTORS[currentMode] || SELECTORS.portal;
     if (extensionEnabled) {
       window.addEventListener('load', () => { startObserver(); createFloatingChat(); });
@@ -73,6 +75,10 @@
     }
     if (msg?.type === 'RICH_FORMAT_CHANGED') {
       richFormat = msg.richFormat;
+      return;
+    }
+    if (msg?.type === 'AUTOFILL_CHANGED') {
+      autoFillEnabled = msg.autoFillEnabled;
       return;
     }
     // ── Keyboard shortcuts từ background ──
@@ -164,6 +170,9 @@
             return;
           }
           showResult(resultDiv, response.data, currentMode, response.fromCache);
+          if (autoFillEnabled) {
+            autoFillAnswer(item, response.data, currentMode);
+          }
         });
       });
 
@@ -464,7 +473,7 @@
   // ═══════════════════════════════════════════════════
 
   // ───────────────────────────────────────────────────
-  // MATH RENDERING (CODECOGS SVG API)
+  // MATH RENDERING (KATEX)
   // ───────────────────────────────────────────────────
 
   /**
@@ -504,44 +513,30 @@
   }
 
   /**
-   * Render markdown + LaTeX bằng CodeCogs API.
-   * Dùng thẻ <img> để vượt qua CSP script-src khắt khe.
+   * Render markdown + LaTeX bằng KaTeX cục bộ.
    */
   function renderMarkdown(text) {
     if (!text) return '';
     const parts = splitByMath(text);
     return parts.map(seg => {
       if (seg.type === 'block') {
-        // CodeCogs chỉ hỗ trợ \color{Blue} mặc định, dùng mã HEX sẽ báo lỗi 400
-        const latex = `\\color{Blue}\\displaystyle ${seg.content}`;
-        const url = `https://latex.codecogs.com/svg.image?${encodeURIComponent(latex)}`;
-        return `<div class="hoangdz-katex-block"><img class="hoangdz-math-img" src="${url}" data-latex="${escapeHtml(seg.content)}" style="max-width:100%;" alt="Math block" /></div>`;
+        try {
+          const html = katex.renderToString(seg.content, { displayMode: true, throwOnError: false });
+          return `<div class="hoangdz-katex-block" style="overflow-x:auto; margin: 8px 0;">${html}</div>`;
+        } catch (e) {
+          return `<div class="hoangdz-katex-block"><span class="hoangdz-latex-block">${escapeHtml(seg.content)}</span></div>`;
+        }
       }
       if (seg.type === 'inline') {
-        const latex = `\\color{Blue}${seg.content}`;
-        const url = `https://latex.codecogs.com/svg.image?${encodeURIComponent(latex)}`;
-        return `<img class="hoangdz-math-img" src="${url}" data-latex="${escapeHtml(seg.content)}" style="vertical-align:middle; margin:0 2px;" alt="Math inline" />`;
+        try {
+          const html = katex.renderToString(seg.content, { displayMode: false, throwOnError: false });
+          return `<span class="hoangdz-katex-inline" style="margin: 0 2px;">${html}</span>`;
+        } catch (e) {
+          return `<code class="hoangdz-latex-inline">${escapeHtml(seg.content)}</code>`;
+        }
       }
       return applyTextMarkdown(seg.content);
     }).join('');
-  }
-
-  /**
-   * Fallback an toàn: nếu ảnh SVG bị chặn hoặc lỗi mạng, 
-   * tự động chuyển về text box.
-   */
-  function attachMathImageFallbacks(container) {
-    container.querySelectorAll('img.hoangdz-math-img').forEach(img => {
-      img.addEventListener('error', function () {
-        const latex = this.getAttribute('data-latex') || '';
-        const isBlock = this.parentElement.classList.contains('hoangdz-katex-block');
-        if (isBlock) {
-          this.parentElement.outerHTML = `<span class="hoangdz-latex-block">${escapeHtml(latex)}</span>`;
-        } else {
-          this.outerHTML = `<code class="hoangdz-latex-inline">${escapeHtml(latex)}</code>`;
-        }
-      });
-    });
   }
 
   function showResult(container, data, mode, fromCache = false) {
@@ -590,13 +585,54 @@
       confEl.innerHTML = `Độ chắc chắn: <span style="color:${color};font-weight:700">${pct}%</span>`;
       container.appendChild(confEl);
     }
-
-    if (richFormat) attachMathImageFallbacks(container);
   }
 
   function showError(container, message) {
     container.textContent = 'Lỗi: ' + message;
     container.classList.add('hoangdz-ai-error');
+  }
+
+  // ═══════════════════════════════════════════════════
+  // AUTO-FILL ANSWER
+  // ═══════════════════════════════════════════════════
+  function autoFillAnswer(item, data, mode) {
+    if (!data) return;
+    
+    // Portal mode
+    if (mode === 'portal') {
+      if (data.questionType === 'fill_in' && data.answer) {
+        const input = item.querySelector('input.question_input');
+        if (input && !input.value) {
+          input.value = data.answer;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      } else if (data.questionType === 'multiple_choice' && data.correct_index) {
+        const answers = item.querySelectorAll('.answer input[type="radio"], .answer input[type="checkbox"]');
+        const target = answers[data.correct_index - 1];
+        if (target && !target.checked) {
+          target.click(); // Trigger click event
+        }
+      }
+    }
+    
+    // LMS mode
+    if (mode === 'lms') {
+      if (data.questionType === 'fill_in' && data.answer) {
+        const input = item.querySelector('input[type="text"], input.form-control');
+        if (input && !input.value) {
+          input.value = data.answer;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      } else if (data.questionType === 'multiple_choice' && data.correct_index) {
+        const answers = item.querySelectorAll(SELECTORS.lms.option + ' input');
+        const target = answers[data.correct_index - 1];
+        if (target && !target.checked) {
+          target.click();
+        }
+      }
+    }
   }
 
   // ═══════════════════════════════════════════════════

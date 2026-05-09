@@ -206,7 +206,7 @@ Schema:
 }
 
 Quy tắc:
-- answer: kết quả số thập phân (nếu yêu cầu 2 chữ số sau dấu phẩy thì làm tròn đúng 2 chữ số).
+- answer: kết quả số thập phân (mặc định làm tròn chính xác đến 4 chữ số sau dấu phẩy trừ khi đề bài yêu cầu khác).
 - explanation: trình bày các bước tính toán.
 - confidence: từ 0 đến 1.
 - Nếu câu hỏi yêu cầu điền 0 khi không tuần hoàn, hãy kiểm tra và điền đúng.${formatNote}${imageNote}

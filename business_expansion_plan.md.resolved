@@ -1,0 +1,104 @@
+# Kế hoạch Chiến lược Nâng cấp & Thương mại hóa LMS AI Assistant
+
+Dựa trên mã nguồn hiện tại của dự án, dưới đây là bản kế hoạch chi tiết để chuyển đổi `LMS AI Assistant` từ một công cụ miễn phí, phụ thuộc vào `9Router` (chạy local) sang một sản phẩm SaaS thương mại (trả phí), đồng thời mở rộng khả năng hỗ trợ đa nền tảng cho nhiều trường đại học khác nhau.
+
+---
+
+## Giai đoạn 1: Chuyển đổi Kiến trúc & Xây dựng Hệ thống Backend (SaaS)
+
+Hiện tại, Extension đang phụ thuộc vào `9Router` chạy ở `localhost:20128` và yêu cầu người dùng tự cấu hình API Key. Để thu phí, chúng ta cần giấu API Key và quản lý hạn mức (quota) trên Server của riêng mình.
+
+### 1. Xây dựng Backend Độc lập (API Gateway & User Management)
+*   **Công nghệ đề xuất:** Node.js (NestJS/Express) hoặc Go, Database: PostgreSQL / MongoDB. Redis để caching và rate-limiting.
+*   **Tính năng cốt lõi:**
+    *   **Authentication:** Đăng nhập/Đăng ký qua Extension (Hỗ trợ Google OAuth2 để sinh viên đăng nhập nhanh).
+    *   **AI Gateway:** Thay thế 9Router. Extension sẽ gọi đến server của bạn (VD: `api.lmsassistant.com/chat`), server sẽ kiểm tra token người dùng, trừ quota, sau đó mới gọi đến OpenAI/Gemini/DeepSeek.
+    *   **Quản lý API Key nội bộ:** Server tự giữ các API Key (OpenAI, Anthropic, Google), Extension tuyệt đối không chứa key để chống đánh cắp.
+    *   **Credit/Subscription System:** Mỗi tài khoản có số lượng "Credit" hoặc gói "Premium" theo tháng.
+
+### 2. Tích hợp Cổng thanh toán (Billing)
+*   **Thị trường Việt Nam:** Tích hợp Momo, VNPay, hoặc chuyển khoản ngân hàng tự động (quét mã QR VietQR) qua các dịch vụ như SePay / Cass.
+*   **Thị trường Quốc tế (nếu mở rộng):** Tích hợp Stripe hoặc PayPal.
+*   **Mô hình thu phí đề xuất (Freemium):**
+    *   *Gói Free:* 10 câu hỏi/ngày, sử dụng model cơ bản (Gemini 1.5 Flash), không hỗ trợ phân tích hình ảnh phức tạp.
+    *   *Gói Pro:* Không giới hạn (hoặc 500 câu/tháng), dùng model xịn (GPT-4o, Claude 3.5 Sonnet, DeepSeek Vision), hỗ trợ "Hỏi tất cả" nhanh, ưu tiên phản hồi.
+
+---
+
+## Giai đoạn 2: Nâng cấp Core & Mở rộng Đa Nền tảng (Universal LMS)
+
+Hiện tại `content.js` đang hardcode selector cho 2 nền tảng: `LMS cũ (HUST)` và `Canvas Portal (UET)`. Cách tiếp cận này khó scale.
+
+### 1. Cơ chế Dynamic Selector Engine (Cấu hình trên Server)
+*   Thay vì hardcode CSS Selectors vào `content.js`, Extension sẽ tải file cấu hình nền tảng (`platform_rules.json`) từ Server khi khởi động.
+*   **Cấu trúc Rule:** Định nghĩa cách lấy `container`, `question_text`, `options`, `radio_input` cho từng domain.
+*   **Lợi ích:** Khi một trường đại học cập nhật web hoặc khi bạn muốn hỗ trợ trường mới, chỉ cần update cấu hình trên Server, toàn bộ người dùng sẽ tự động được cập nhật mà không cần publish lại extension lên Chrome Store.
+
+### 2. Hỗ trợ các nền tảng phổ biến "Out-of-the-box"
+*   **Moodle:** Hệ thống phổ biến nhất (HUST, HCMUT, v.v. đều dùng core Moodle). Xây dựng một rule chuẩn chung cho Moodle.
+*   **Canvas LMS:** Nhiều trường đang chuyển sang (như VNU). Cần hỗ trợ xử lý iframe và cross-origin nếu quiz nằm trong iframe.
+*   **Blackboard, Microsoft Forms, Google Forms, Azota, SHub Classroom.**
+*   *Lưu ý:* Cần xử lý các bài kiểm tra được nhúng qua LTI công cụ bên thứ 3.
+
+### 3. Screen/DOM Fallback (Universal AI Detection)
+*   Khi người dùng vào một trang web lạ chưa có rule:
+    *   *Cách 1:* Bổ sung nút **"Chụp ảnh màn hình câu hỏi"** (Selection crop tool). AI Vision sẽ đọc text từ ảnh và giải.
+    *   *Cách 2:* Dùng script duyệt DOM tự động tìm kiếm các pattern giống câu hỏi trắc nghiệm (các đoạn text có dấu `?` và danh sách radio button phía dưới) để tự động nhận diện.
+
+---
+
+## Giai đoạn 3: Tối ưu Trải nghiệm người dùng (UX) & Giao diện (UI)
+
+UI hiện tại ổn nhưng mang tính kỹ thuật (Developer Tool). Cần nâng cấp để trông "Premium" và đáng tiền.
+
+### 1. UI Extension Popup
+*   **Thiết kế Dashboard:** Chuyển đổi Popup thành một mini-dashboard.
+*   **Thông tin tài khoản:** Hiển thị Avatar, Tên người dùng, Loại gói (Free/Pro), Số lượt hỏi còn lại (Progress bar trực quan).
+*   **Giao diện Glassmorphism / Dark Mode:** Cập nhật bảng màu gradient sang trọng hơn, hỗ trợ Dark Mode đồng bộ với hệ điều hành. Thêm hiệu ứng hover, transition mượt mà (dùng TailwindCSS hoặc Vanilla CSS cải tiến).
+
+### 2. Trải nghiệm Tương tác trên Web (Content Script)
+*   **Nút "Hỏi AI" tinh tế hơn:** Thay vì chèn 1 nút to dưới câu hỏi làm vỡ layout, hãy chèn một icon "Tia sét" (⚡) nhỏ gọn ngay cạnh tiêu đề câu hỏi. Khi di chuột vào mới mở rộng thành nút.
+*   **Auto-Fill / Auto-Select (Cực kỳ ăn tiền):** Sau khi AI trả về kết quả, thay vì chỉ hiện text để người dùng tự tick, thêm tùy chọn **"Điền đáp án tự động"**. Script sẽ dùng JS `.click()` vào ô radio/checkbox đúng tương ứng.
+*   **Chế độ Tàng hình (Stealth Mode / Anti-Cheat):**
+    *   Nhiều web thi có script chống gian lận (phát hiện mất focus, phát hiện thay đổi DOM).
+    *   Bọc giao diện Chat và kết quả AI vào **Shadow DOM** để tránh các script trên trang đọc được nội dung của Extension.
+    *   Hạn chế sửa đổi DOM của bài thi, thay vào đó hiển thị một Overlay độc lập (Floating Overlay) nằm đè lên vị trí câu hỏi.
+
+### 3. Floating Chat 2.0
+*   Tối ưu hóa UI Floating Chat để trông giống các trợ lý AI xịn (như Monica, Sider).
+*   Hỗ trợ markdown đầy đủ hơn (Bảng biểu, code highlight chuẩn).
+*   Ghi nhớ vị trí chat box (x, y coords) trên từng domain.
+
+---
+
+## Giai đoạn 4: Tính năng Chuyên sâu & Chống rủi ro
+
+### 1. Xử lý Ảnh & Công thức toán học nâng cao
+*   Hiện tại đang gọi qua `latex.codecogs.com`. Cân nhắc tích hợp thư viện **KaTeX** trực tiếp vào Extension để render cực nhanh, offline và không lo bị chặn (CSP) hoặc lỗi mạng từ bên thứ 3.
+*   Đối với ảnh mờ/ảnh chứa nhiều công thức: Backend nên tích hợp thêm **Mathpix OCR API** để trích xuất text/LaTeX cực chuẩn trước khi đẩy vào LLM, giúp tăng độ chính xác giải bài lên 100%.
+
+### 2. Quản lý Rủi ro & Bảo mật
+*   **Chống lạm dụng (Abuse Prevention):** Rate limit IP, rate limit account. Theo dõi các hành vi spam API.
+*   **Mã hóa Payload:** Mã hóa dữ liệu giao tiếp giữa Extension và Backend để tránh học sinh/sinh viên dùng tool (như Burp Suite) chặn bắt request và fake API.
+*   **Bypass CSP (Content Security Policy):** Xây dựng proxy server riêng để bypass việc tải hình ảnh, font chữ thay vì phụ thuộc hoàn toàn vào background script.
+
+---
+
+## Tóm tắt Lộ trình thực thi (Roadmap)
+
+1.  **Tháng 1: Backend Pivot**
+    *   Code hệ thống Backend API.
+    *   Làm hệ thống Login và User Database.
+    *   Sửa `background.js` đổi URL `localhost:20128` sang server thật.
+2.  **Tháng 2: Payment & Monetization**
+    *   Tích hợp cổng thanh toán (VNPay / VietQR).
+    *   Thiết kế trang Landing Page giới thiệu sản phẩm.
+    *   Làm tính năng kiểm tra Quota (Premium / Free).
+3.  **Tháng 3: UX/UI & Universal LMS**
+    *   Thiết kế lại Popup UI, tích hợp KaTeX.
+    *   Tạo Dynamic Selector, hỗ trợ tự động nhận dạng cho Moodle, Blackboard, Google Forms.
+    *   Tính năng Auto-fill (Tự động click đáp án).
+4.  **Tháng 4: Launch & Marketing**
+    *   Đẩy lên Chrome Web Store.
+    *   Làm chương trình Affiliate (Hoa hồng cho sinh viên giới thiệu bạn bè).
+    *   Chạy ads TikTok / Facebook target sinh viên mùa thi.

@@ -190,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const powerLabel = document.getElementById('powerLabel');
   const settingsArea = document.getElementById('settingsArea');
   const richFormatToggle = document.getElementById('richFormatToggle');
+  const autoFillToggle = document.getElementById('autoFillToggle');
   const clearCacheBtn = document.getElementById('clearCacheBtn');
   const cacheStatusEl = document.getElementById('cacheStatus');
 
@@ -246,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Load saved settings ──
   chrome.storage.local.get(
-    ['providerId', 'modelName', 'apiKey', 'siteMode', 'extensionEnabled', 'richFormat'],
+    ['providerId', 'modelName', 'apiKey', 'siteMode', 'extensionEnabled', 'richFormat', 'autoFillEnabled'],
     (result) => {
       // Extension toggle
       const isEnabled = result.extensionEnabled !== false;
@@ -275,8 +276,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       apiKeyInput.value = result.apiKey || '';
 
-      // Rich format
+      // Toggles
       richFormatToggle.checked = result.richFormat === true;
+      autoFillToggle.checked = result.autoFillEnabled !== false; // Mặc định bật
     }
   );
 
@@ -308,6 +310,18 @@ document.addEventListener('DOMContentLoaded', () => {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0]?.id) {
           chrome.tabs.sendMessage(tabs[0].id, { type: 'RICH_FORMAT_CHANGED', richFormat: isRich });
+        }
+      });
+    });
+  });
+
+  // ── Auto Fill toggle ──
+  autoFillToggle.addEventListener('change', () => {
+    const isAutoFill = autoFillToggle.checked;
+    chrome.storage.local.set({ autoFillEnabled: isAutoFill }, () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.tabs.sendMessage(tabs[0].id, { type: 'AUTOFILL_CHANGED', autoFillEnabled: isAutoFill });
         }
       });
     });

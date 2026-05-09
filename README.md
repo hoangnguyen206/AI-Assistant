@@ -72,7 +72,7 @@ Do đây là extension chạy "cây nhà lá vườn" chưa đưa lên Chrome We
    - Nhấn **Lưu cài đặt**.
    - **💡 Mẹo cực hay với 9router:** 
      Nếu bạn sử dụng [9router](https://github.com/decolua/9router) để quản lý API, highly recommend dùng **OpenAI Codex** (setup trong mục OAuth). 
-     - **Lưu ý xác minh:** OpenAI hiện yêu cầu verify số điện thoại. Mẹo cho bạn là hãy thuê số điện thoại Mỹ ảo (US phone number) trên các trang dịch vụ cho thuê code (SMS active). Chi phí cực kỳ rẻ, chỉ tầm **$0.07 cho 1 tài khoản Gmail** (bạn tự Google tìm hiểu thêm nha).
+     - **Lưu ý xác minh:** OpenAI hiện yêu cầu verify số điện thoại. Mẹo cho bạn là hãy thuê số điện thoại Mỹ ảo (US phone number) trên các trang dịch vụ cho thuê code (SMS active). Chi phí cực kỳ rẻ, chỉ tầm **$0.07 cho 1 tài khoản Gmail** (bạn tự Google tìm hiểu thêm nha, web smspool.net chẳng hạn).
      - Dù đây chỉ là account **Free**, nhưng cái hay của 9router là bạn có thể add thả ga rất nhiều account để hệ thống tự động **xoay tua (rotate)**. Cứ thế mà dùng xả láng không lo hết quota! 🤑
    
 2. **Quẩy thôi**:
