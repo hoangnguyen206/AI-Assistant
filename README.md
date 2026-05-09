@@ -32,31 +32,23 @@ Trông rất là mệt mỏi đúng không? Với **LMS AI Assistant**, bạn ch
 
 **1. Format Text Thuần vs Định dạng Toán học Đẹp**
 > *Với tính năng Rich Output, các công thức được render chuẩn chỉnh thay vì text thuần thô ráp.*
+<img width="1632" height="1219" alt="image" src="https://github.com/user-attachments/assets/567da096-f860-4211-b3e7-358f856b0c45" />
 
-<img width="1641" height="1819" alt="image" src="https://github.com/user-attachments/assets/3654da65-19f1-4ed8-92ae-e18eaddb8d3b" />
-<br/>
-<img width="1608" height="376" alt="image" src="https://github.com/user-attachments/assets/c04539d4-4db1-433f-87dd-f3a813f107ca" />
 
 **2. Tính năng "Hỏi tất cả" (Ask-All)**
 > *Nút bấm thần thánh: Bấm 1 nhát giải quyết cả đề thi.*
-
-<img width="2071" height="175" alt="image" src="https://github.com/user-attachments/assets/ed77623d-8f25-40d9-bd9e-e6bf819bc673" />
-<br/>
-<img width="2075" height="162" alt="image" src="https://github.com/user-attachments/assets/0bc9d915-50c5-46a9-974c-64e8ad183f41" />
+<img width="2069" height="185" alt="image" src="https://github.com/user-attachments/assets/0e14b59b-0a25-4814-bbaa-12ce2f4b9a30" />
+<img width="2059" height="159" alt="image" src="https://github.com/user-attachments/assets/c0108073-b0bc-4084-b6f0-b88937e1ce62" />
 
 **3. Khung Chat AI Nổi (Floating Chat)**
 > *Trò chuyện trực tiếp và đính kèm hình ảnh ngay trong tab làm bài.*
-
-<img width="850" height="1112" alt="image" src="https://github.com/user-attachments/assets/c665093b-f0ba-4573-848b-15d776befa2c" />
+<img width="837" height="1251" alt="image" src="https://github.com/user-attachments/assets/e058472e-2e60-42f0-8abd-5d881a15c232" />
 
 **4. Thống kê & Quản lý API**
 > *Bảng điều khiển trực quan trên Popup.*
-
-<img width="895" height="1262" alt="image" src="https://github.com/user-attachments/assets/da3b45fd-daac-4e65-b14f-038ddec9dc3c" />
-<br/>
-<img width="907" height="837" alt="image" src="https://github.com/user-attachments/assets/a4c2297a-c02e-4245-b5ee-22e43222bc41" />
-<br/>
-<img width="908" height="1070" alt="image" src="https://github.com/user-attachments/assets/15e7dd29-0e08-4d17-bad8-d68b295903f6" />
+<img width="975" height="1502" alt="image" src="https://github.com/user-attachments/assets/44edcf72-b055-435a-b082-5f1363822081" />
+<img width="991" height="1414" alt="image" src="https://github.com/user-attachments/assets/7e0ea2f7-4af5-42b5-85a8-7b5d63f84264" />
+<img width="987" height="1489" alt="image" src="https://github.com/user-attachments/assets/7d6fb49f-fc68-4742-b724-5b1b14ef78b6" />
 
 ---
 
