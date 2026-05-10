@@ -33,6 +33,16 @@
   // ═══════════════════════════════════════════════════
   // INIT
   // ═══════════════════════════════════════════════════
+  
+  function injectKatexCss() {
+    if (document.getElementById('hoangdz-katex-css')) return;
+    const link = document.createElement('link');
+    link.id = 'hoangdz-katex-css';
+    link.rel = 'stylesheet';
+    link.href = chrome.runtime.getURL('katex/katex.min.css');
+    document.head.appendChild(link);
+  }
+
   chrome.storage.local.get(['siteMode', 'extensionEnabled', 'richFormat', 'autoFillEnabled'], (result) => {
     currentMode = result.siteMode || 'portal';
     extensionEnabled = result.extensionEnabled !== false;
@@ -40,6 +50,7 @@
     autoFillEnabled = result.autoFillEnabled !== false;
     currentSelectors = SELECTORS[currentMode] || SELECTORS.portal;
     if (extensionEnabled) {
+      injectKatexCss();
       window.addEventListener('load', () => { startObserver(); createFloatingChat(); });
       startObserver();
       createFloatingChat();
@@ -332,28 +343,46 @@
     let options = [];
     let isFillin = false;
 
-    if (questionType === 'multiple_choice_question') {
-      // Radio options
-      options = Array.from(item.querySelectorAll('.answer')).map((ans, i) => {
+    const answerEls = item.querySelectorAll('.answer');
+    
+    // Nếu có class .answer và không phải dạng điền khuyết
+    if (answerEls.length > 0 && questionType !== 'numerical_question' && questionType !== 'short_answer_question') {
+      // Trắc nghiệm (có thể là lúc đang làm hoặc đang xem lại bài)
+      options = Array.from(answerEls).map((ans, i) => {
         const textEl = ans.querySelector('.answer_text');
         const labelEl = ans.querySelector('.answer_label');
         const htmlEl = ans.querySelector('.answer_html');
 
-        // QUAN TRỌNG: dùng extractTextWithMath() thay vì raw .textContent
-        // để tránh MathJax render \frac{1}{2} thành "12" trong textContent.
-        let text = extractTextWithMath(textEl)
-          || extractTextWithMath(labelEl)
-          || extractTextWithMath(htmlEl)
-          || '';
-        if (text === 'No answer text provided.') text = '';
+        const parseText = (el) => {
+          let t = extractTextWithMath(el);
+          return t === 'No answer text provided.' ? '' : t;
+        };
 
-        const input = ans.querySelector('input[type="radio"]');
-        return { index: i + 1, text, selected: Boolean(input?.checked) };
+        let text = parseText(textEl) || parseText(labelEl) || parseText(htmlEl) || '';
+        
+        if (!text) {
+          // Fallback: lấy text trực tiếp từ thẻ .answer, loại bỏ text thừa trong chế độ review
+          text = extractTextWithMath(ans);
+          text = text.replace(/Correct Answer/ig, '').replace(/You Answered/ig, '').trim();
+          if (text === 'No answer text provided.') text = '';
+        }
+
+        // Cứu cánh cuối cùng: nếu text vẫn rỗng do Canvas dùng class ẩn (display:none)
+        if (!text && ans.textContent) {
+          text = ans.textContent.replace(/Correct Answer/ig, '').replace(/You Answered/ig, '').trim();
+          if (text === 'No answer text provided.') text = '';
+        }
+
+        const input = ans.querySelector('input[type="radio"], input[type="checkbox"]');
+        const isSelected = input ? Boolean(input.checked) : ans.classList.contains('selected_answer');
+        
+        return { index: i + 1, text, selected: isSelected };
       }).filter(o => o.text);
 
     } else if (
       questionType === 'numerical_question' ||
-      questionType === 'short_answer_question'
+      questionType === 'short_answer_question' ||
+      item.querySelector('input.question_input')
     ) {
       // Fill-in answer — lấy giá trị đã nhập (nếu có)
       isFillin = true;
@@ -430,6 +459,21 @@
       }
     });
 
+    // ── Image equations (Canvas) ──
+    clone.querySelectorAll('img').forEach(img => {
+      const span = document.createElement('span');
+      if (img.classList.contains('equation_image')) {
+        let latex = img.getAttribute('data-mathml') || img.alt || '';
+        // Đôi khi Canvas bọc sẵn $$ hoặc \[ \] trong alt, ta làm sạch qua
+        latex = latex.replace(/^\$\$?|\\\[|\\\]|\$\$?$/g, '').trim();
+        span.textContent = ` $${latex}$ `;
+      } else {
+        span.textContent = img.alt ? ` [Ảnh: ${img.alt}] ` : ' [Ảnh] ';
+      }
+      img.parentNode?.insertBefore(span, img);
+      img.remove();
+    });
+
     // ── Xóa tất cả element MathJax render ──
     clone.querySelectorAll([
       '.MathJax_SVG', '.MathJax_Preview', '.MJX_Assistive_MathML',
@@ -437,7 +481,9 @@
       'mjx-container', 'math'          // MathML/MathJax3 leftovers
     ].join(', ')).forEach(e => e.remove());
 
-    return clone.innerText?.replace(/\s+/g, ' ').trim() || '';
+    // Dùng textContent thay vì innerText để bắt được cả text bị display:none
+    const finalTxt = clone.innerText?.trim() || clone.textContent || '';
+    return finalTxt.replace(/\s+/g, ' ').trim();
   }
 
   // ═══════════════════════════════════════════════════
@@ -553,8 +599,10 @@
     if (mode === 'portal' && data.questionType === 'fill_in') {
       const ansEl = document.createElement('p');
       ansEl.className = 'hoangdz-ai-answer';
-      // fill_in: hiển thị số đáp án — không có LaTeX phức tạp
-      ansEl.innerHTML = `<b>Đáp án:</b> <span class="hoangdz-answer-value">${escapeHtml(String(data.answer || data.correct_text || ''))}</span>`;
+      const textPart = richFormat
+        ? renderMarkdown(String(data.answer || data.correct_text || ''))
+        : escapeHtml(String(data.answer || data.correct_text || ''));
+      ansEl.innerHTML = `<b>Đáp án:</b> <span class="hoangdz-answer-value">${textPart}</span>`;
       container.appendChild(ansEl);
     } else {
       const ansEl = document.createElement('p');

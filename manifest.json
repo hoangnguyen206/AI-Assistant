@@ -29,13 +29,13 @@
     {
       "matches": ["*://*/*"],
       "js": ["katex/katex.min.js", "content.js"],
-      "css": ["katex/katex.min.css", "style.css"],
+      "css": ["style.css"],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["katex/fonts/*"],
+      "resources": ["katex/fonts/*", "katex/katex.min.css"],
       "matches": ["*://*/*"]
     }
   ]

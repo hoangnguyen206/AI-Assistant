@@ -166,11 +166,11 @@ async function handleAIRequest(req) {
 // PROMPT BUILDERS
 // ═══════════════════════════════════════════════════
 const RICH_FORMAT_INSTRUCTION = `
-Định dạng phần "explanation":
+Định dạng phần "answer", "correct_text" và "explanation":
 - Dùng **bold** để nhấn mạnh.
 - Dùng \\n để xuống dòng giữa các bước.
-- Dùng LaTeX inline $...$ cho công thức nhỏ (ví dụ: $x^2 + y^2$).
-- Dùng LaTeX block $$...$$ cho công thức lớn cần hiển thị riêng (ví dụ: $$\\int_0^1 x^2\\,dx = \\frac{1}{3}$$).
+- BẮT BUỘC dùng LaTeX inline $...$ cho CÁC CÔNG THỨC/KÝ HIỆU TOÁN (ví dụ: $x^2 + y^2$).
+- Dùng LaTeX block $$...$$ cho công thức lớn.
 - Ký hiệu đặc biệt: dùng → thay "ra", ≈ thay "xấp xỉ", ± thay "cộng trừ".`;
 
 function buildQuizPrompt(payload = {}, mode = 'portal', richFormat = false) {
@@ -184,7 +184,7 @@ function buildQuizPrompt(payload = {}, mode = 'portal', richFormat = false) {
     images = [],
   } = payload;
 
-  const isFillin = questionType === 'fill_in';
+  const isFillin = questionType === 'fill_in' || (questionType === 'multiple_choice' && (!options || options.length === 0));
   const hasVision = images.length > 0;
 
   const imageNote = hasImages && !hasVision
@@ -380,7 +380,7 @@ function parseAIResponse(rawText, payload = {}) {
     parsed = JSON.parse(match[0]);
   }
 
-  const isFillin = payload.questionType === 'fill_in';
+  const isFillin = payload.questionType === 'fill_in' || (payload.questionType === 'multiple_choice' && (!payload.options || payload.options.length === 0));
 
   if (isFillin) {
     return {
