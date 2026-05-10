@@ -646,14 +646,38 @@
   function autoFillAnswer(item, data, mode) {
     if (!data) return;
     
+    console.log('[HoangDZ] autoFillAnswer called. Mode:', mode, 'Data:', data);
+
+    // Hàm hỗ trợ điền giá trị cho các form có thể dùng React/Vue
+    const setInputValue = (input, value) => {
+      console.log('[HoangDZ] Đang điền giá trị:', value, 'vào ô:', input);
+      input.focus(); // Focus vào ô trước
+      
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+      if (nativeInputValueSetter) {
+        nativeInputValueSetter.call(input, value);
+      } else {
+        input.value = value;
+      }
+      
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'Enter' }));
+      
+      input.blur(); // Bỏ focus để kích hoạt sự kiện onBlur (nếu có)
+      console.log('[HoangDZ] Đã điền xong!');
+    };
+    
     // Portal mode
     if (mode === 'portal') {
-      if (data.questionType === 'fill_in' && data.answer) {
-        const input = item.querySelector('input.question_input');
-        if (input && !input.value) {
-          input.value = data.answer;
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          input.dispatchEvent(new Event('change', { bubbles: true }));
+      if (data.questionType === 'fill_in' && data.answer !== undefined && data.answer !== '') {
+        const input = item.querySelector('input.question_input, input[type="text"].numerical_question_input');
+        if (input) {
+          // Xóa các ký tự markdown dư thừa do AI có thể sinh ra (**6.0000** -> 6.0000)
+          let cleanAns = String(data.answer).replace(/[*$`]/g, '').trim();
+          setInputValue(input, cleanAns);
+        } else {
+          console.warn('[HoangDZ] Không tìm thấy ô input điền khuyết trong phần tử:', item);
         }
       } else if (data.questionType === 'multiple_choice' && data.correct_index) {
         const answers = item.querySelectorAll('.answer input[type="radio"], .answer input[type="checkbox"]');
@@ -666,12 +690,11 @@
     
     // LMS mode
     if (mode === 'lms') {
-      if (data.questionType === 'fill_in' && data.answer) {
+      if (data.questionType === 'fill_in' && data.answer !== undefined && data.answer !== '') {
         const input = item.querySelector('input[type="text"], input.form-control');
-        if (input && !input.value) {
-          input.value = data.answer;
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          input.dispatchEvent(new Event('change', { bubbles: true }));
+        if (input) {
+          let cleanAns = String(data.answer).replace(/[*$`]/g, '').trim();
+          setInputValue(input, cleanAns);
         }
       } else if (data.questionType === 'multiple_choice' && data.correct_index) {
         const answers = item.querySelectorAll(SELECTORS.lms.option + ' input');
