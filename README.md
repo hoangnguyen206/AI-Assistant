@@ -32,7 +32,8 @@ Trông rất là mệt mỏi đúng không? Với **LMS AI Assistant**, bạn ch
 
 **1. Format Text Thuần vs Định dạng Toán học Đẹp**
 > *Với tính năng Rich Output, các công thức được render chuẩn chỉnh thay vì text thuần thô ráp.*
-<img width="1632" height="1219" alt="image" src="https://github.com/user-attachments/assets/567da096-f860-4211-b3e7-358f856b0c45" />
+<img width="1647" height="1857" alt="image" src="https://github.com/user-attachments/assets/02b47eb0-a861-4e09-b9f6-a8ac6df56a5e" />
+
 
 
 **2. Tính năng "Hỏi tất cả" (Ask-All)**
