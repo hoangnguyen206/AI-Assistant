@@ -358,7 +358,7 @@
           return t === 'No answer text provided.' ? '' : t;
         };
 
-        let text = parseText(textEl) || parseText(labelEl) || parseText(htmlEl) || '';
+        let text = parseText(htmlEl) || parseText(textEl) || parseText(labelEl) || '';
         
         if (!text) {
           // Fallback: lấy text trực tiếp từ thẻ .answer, loại bỏ text thừa trong chế độ review
@@ -474,11 +474,13 @@
       img.remove();
     });
 
-    // ── Xóa tất cả element MathJax render ──
+    // ── Xóa tất cả element MathJax render và các phần tử ẩn ──
     clone.querySelectorAll([
       '.MathJax_SVG', '.MathJax_Preview', '.MJX_Assistive_MathML',
       '.MathJax', '[id^="MathJax"]',
-      'mjx-container', 'math'          // MathML/MathJax3 leftovers
+      'mjx-container', 'math',          // MathML/MathJax3 leftovers
+      '.screenreader-only', '.sr-only', '.visually-hidden', '.hidden-readable',
+      '[style*="display: none"]', '[style*="display:none"]'
     ].join(', ')).forEach(e => e.remove());
 
     // Dùng textContent thay vì innerText để bắt được cả text bị display:none
